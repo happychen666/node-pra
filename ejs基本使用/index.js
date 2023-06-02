@@ -5,8 +5,9 @@ const app = new Koa();
 
 render(app, {
     // 使用ejs中间件
-    root: './',   // 模板目录  
-    layout: false, // 关闭模板布局 (关闭上中下或左中右这种布局)
+    root: './templates',   // 模板目录  
+    // layout: false, // 关闭模板布局 (关闭上中下或左中右这种布局)
+    layout: 'main', // 开启模板布局 (关闭上中下或左中右这种布局)
     viewExt: 'ejs'
 });
 
