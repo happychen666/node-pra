@@ -20,58 +20,56 @@ const sequelize = new Sequelize({
 （2）使用init方法初始化模型字段和模型选项。 */
 
 // 定义User模型(可以理解成数据库里面的一张表)
-
-class User extends Model {
-  //可以直接在模型类中添加静态方法和实例方法。
-  getFullName() {
-    return this.lastname + this.firstname;
-    // this代表User实例，也就是一行数据记录
-  }
-  static checkName(name) {
-    // 静态方法，通过User.checkName(name)调用
-    return true;
-  }
-}
-
+class User extends Model {}
 User.init(
   {
+    // 字段设置（表里面的字段）
     id: {
       type: DataTypes.INTEGER({ unsigned: true }),
       primaryKey: true,
       autoIncrement: true,
       comment: "用户ID",
     },
-    firstname: {
-      type: DataTypes.STRING(10),
+    username: DataTypes.STRING(40),
+    password: {
+      type: DataTypes.CHAR(64),
       allowNull: false,
-      validate: {
-        notEmpty: { msg: "名不能为空" },
-      },
-    },
-    lastname: {
-      type: DataTypes.STRING(10),
-      allowNull: false,
-      validate: {
-        notEmpty: { msg: "姓不能为空" },
-      },
+      comment: "密码",
     },
   },
+  // 模型选项设置
   {
     sequelize: sequelize,
     tableName: "user",
     modelName: "user",
     paranoid: true,
-    underscored: true,
+    hooks: {
+      //   beforeSave钩子对密码加密
+      beforeSave(user) {
+        // 使用user.changed('password')来判断当前user的password是否有更改,如果产生更改，则需要对新密码进行加密。
+        if (user.changed("password")) {
+          user.password = crypto
+            .createHash("sha256")
+            .update(user.password)
+            .digest("hex");
+        }
+      },
+    },
   }
 );
-
+//使用sequelize.sync()将模型同步到数据库（自动建表）
 sequelize
-  .sync({ force: true })
+  .sync()
   .then(() => {
+    // 插入了一条用户数据
     return User.create({
-      firstname: "san",
-      lastname: "zhang",
+      username: "chenqun",
+      password: "password",
     });
   })
-  .then((user) => console.log(user.getFullName())) // 输出“zhangsan”
-  .catch((err) => console.error(err));
+  .then((user) => {
+    console.log(user.toJSON());
+  })
+  .catch((err) => {
+    console.error(err);
+  });
