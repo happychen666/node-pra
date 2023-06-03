@@ -1,34 +1,26 @@
-const Koa = require('koa');
-const render = require('koa-ejs');
-const bodyParser = require('koa-bodyparser');
-const staticMiddleware = require('koa-static');
-const errorHandler = require('./middlewares/errorHandler');
-const authenticate = require('./middlewares/authenticate');
-const homeRoute = require('./routes/home');
-const userRoute = require('./routes/user');
-const weiboRoute = require('./routes/weibo');
-const commentRoute = require('./routes/comment');
+const Koa = require("koa");
+const render = require("koa-ejs");
+const bodyParser = require("koa-bodyparser");
+const authenticate = require("./middlewares/authenticate");
 
-const app = new Koa({
-    keys: ['KGJ6NLxqOkYCNr1h']
-});
+// 路由
+const siteRoute = require("./routes/site");
+const userRoute = require("./routes/user");
+const postRoute = require("./routes/post");
 
-// 中间件
-app.use(errorHandler);
-render(app, { // 使用ejs中间件
-    root: './templates', // 模板目录
-    layout: 'layout', // 关闭模板布局
-    viewExt: 'ejs'
-});
-app.use(staticMiddleware(__dirname + '/public'));
+const app = new Koa();
+app.keys = ["hO0TTQctIjSjNykY"];
+
+// 使用中间件
 app.use(bodyParser());
 app.use(authenticate);
-// 路由
-app.use(homeRoute.routes()).use(homeRoute.allowedMethods());
-app.use(userRoute.routes()).use(userRoute.allowedMethods());
-app.use(weiboRoute.routes()).use(weiboRoute.allowedMethods());
-app.use(commentRoute.routes()).use(commentRoute.allowedMethods());
 
-app.listen(8080, () => {
-    console.log('listen on 8080')
+render(app, { root: "./templates", layout: "main", viewExt: "ejs" });
+// 挂载路由
+app.use(siteRoute.routes()).use(siteRoute.allowedMethods());
+app.use(userRoute.routes()).use(userRoute.allowedMethods());
+app.use(postRoute.routes()).use(postRoute.allowedMethods());
+
+app.listen(10000, () => {
+  console.log("listen on 10000");
 });
