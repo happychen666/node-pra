@@ -1,6 +1,5 @@
 // 配置sequelize
 const { Sequelize, Model, DataTypes } = require("sequelize");
-let crypto = require("crypto");
 
 // 数据库连接配置
 const sequelize = new Sequelize({
@@ -22,40 +21,24 @@ const sequelize = new Sequelize({
 // 定义User模型(可以理解成数据库里面的一张表)
 class User extends Model {}
 User.init(
+  // 字段设置（表里面的字段）
   {
-    // 字段设置（表里面的字段）
     id: {
-      type: DataTypes.INTEGER({ unsigned: true }),
-      primaryKey: true,
-      autoIncrement: true,
-      comment: "用户ID",
+      type: DataTypes.INTEGER({ unsigned: true }), //数据类型
+      primaryKey: true, //是否主键
+      autoIncrement: true, //是否自增
+      comment: "用户ID", //字段注释
     },
-    username: DataTypes.STRING(40),
-    password: {
-      type: DataTypes.CHAR(64),
+    username: {
+      type: DataTypes.STRING(40),
+      unique: true, //是否唯一索引
       allowNull: false,
-      comment: "密码",
+      comment: "账号",
     },
+    password: { type: DataTypes.CHAR(64), allowNull: false, comment: "密码" },
   },
   // 模型选项设置
-  {
-    sequelize: sequelize,
-    tableName: "user",
-    modelName: "user",
-    paranoid: true,
-    hooks: {
-      //   beforeSave钩子对密码加密
-      beforeSave(user) {
-        // 使用user.changed('password')来判断当前user的password是否有更改,如果产生更改，则需要对新密码进行加密。
-        if (user.changed("password")) {
-          user.password = crypto
-            .createHash("sha256")
-            .update(user.password)
-            .digest("hex");
-        }
-      },
-    },
-  }
+  { sequelize: sequelize, tableName: "user", modelName: "user" }
 );
 //使用sequelize.sync()将模型同步到数据库（自动建表）
 sequelize
@@ -63,7 +46,7 @@ sequelize
   .then(() => {
     // 插入了一条用户数据
     return User.create({
-      username: "chenqun",
+      username: "xialei",
       password: "password",
     });
   })
